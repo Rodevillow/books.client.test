@@ -9,11 +9,9 @@
       <UiSmallText>Available stock: {{ book.availableStock }}</UiSmallText>
     </div>
 
-    <UiButtonDefault
-        class="product__button"
-        @click="handleTryToBuy"
-    >
-      Try to buy
+    <UiButtonDefault class="product__button" @click="handleTryToBuy(book.id)">
+      <span v-if="!isLoadingButton">Try to buy</span>
+      <span v-if="isLoadingButton"><UiSpinnerSmall /></span>
     </UiButtonDefault>
   </div>
 
@@ -27,25 +25,45 @@ import UiH3 from "@/components/UiH3.vue"
 import UiPrice from "@/components/UiPrice.vue"
 import UiSpinner from "@/components/UiSpinner.vue"
 import UiSmallText from "@/components/UiSmallText.vue"
+import UiButtonDefault from "@/components/UiButtonDefault.vue";
+
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 
 import useApi from "@/utils/api"
 import {onMounted, ref} from "vue"
 import {useRoute} from "vue-router"
-import UiButtonDefault from "@/components/UiButtonDefault.vue";
+import UiSpinnerSmall from "@/components/UiSpinnerSmall.vue";
 
 const api = useApi()
 const route = useRoute()
 
 const book = ref({})
 const isLoading = ref(false)
+const isLoadingButton = ref(false)
 
-const handleTryToBuy = () => { console.log('handleTryToBuy'); }
+const handleTryToBuy = async (id:string|number) => {
+  try {
+    isLoadingButton.value = true;
+    const response = await api.post(`books/${id}/purchase`);
+    toast.success(`${response.data.messagae}`, {autoClose: 1000});
+    await loadBookData();
+  } catch (error:any) {
+    toast.error(`${error?.message}`, {autoClose: 2000});
+  } finally {
+    isLoadingButton.value = false;
+  }
+}
+
+const loadBookData = async () => {
+  const response = await api.get(`books/${route.params.id}`)
+  book.value = response.data?.book
+}
 
 onMounted(async () => {
   try {
     isLoading.value = true
-    const response = await api.get(`books/${route.params.id}`)
-    book.value = response.data?.book
+    await loadBookData();
   } catch ({message}) {
     console.error(message)
   } finally {
