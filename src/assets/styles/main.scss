@@ -1,0 +1,22 @@
+@import "fonts";
+@import "varibales";
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  outline: none;
+}
+
+body {
+  font-family: "Montserrat", sans-serif;
+  background-color: $background-color;
+  padding: 10px;
+  margin: 0;
+  color: white;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
